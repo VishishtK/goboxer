@@ -406,6 +406,13 @@ func (req *BatchRequest) ExecuteBatch(requests []*Request) (*BatchResponse, erro
 		err = xerrors.Errorf("failed to send request: %w", err)
 		return nil, newApiOtherError(err, "")
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	respBodyBytes, err := ioutil.ReadAll(resp.Body)
+
+	logResponse(resp, respBodyBytes, rttInMillis)
 
 	var result *BatchResponse
 
@@ -436,7 +443,7 @@ func (req *BatchRequest) ExecuteBatch(requests []*Request) (*BatchResponse, erro
 		indResp := &Response{
 			ResponseCode: v.Status,
 			Headers:      httpHeader,
-			Body:         []byte(bo),
+			Body:         io.NopCloser(bytes.NewReader(bo)),
 			Request:      requests[i],
 			ContentType:  resp.Header.Get(httpHeaderContentType),
 			RTTInMillis:  rttInMillis,

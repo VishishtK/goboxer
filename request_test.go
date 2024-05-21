@@ -3,6 +3,7 @@ package goboxer
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -327,10 +328,10 @@ func TestBatchRequest_ExecuteBatch(t *testing.T) {
 		Headers:      http.Header{},
 		RTTInMillis:  0,
 		ResponseCode: 201,
-		Body: []byte(`{
+		Body: io.NopCloser(bytes.NewReader([]byte(`{
         "type": "collaboration",
         "id": "123"
-      }`),
+      }`))),
 	}
 	bResp2 := &Response{
 		Request:      br2,
@@ -338,13 +339,13 @@ func TestBatchRequest_ExecuteBatch(t *testing.T) {
 		Headers:      http.Header{},
 		RTTInMillis:  0,
 		ResponseCode: 404,
-		Body: []byte(`{
+		Body: io.NopCloser(bytes.NewReader([]byte(`{
         "type": "error",
         "status": 404,
         "code": "not_found",
         "message": "Not Found",
         "request_id": "139334760758014ea2935ab"
-      }`),
+      }`))),
 	}
 	bResp3 := &Response{
 		Request:      br3,
@@ -352,10 +353,10 @@ func TestBatchRequest_ExecuteBatch(t *testing.T) {
 		Headers:      http.Header{},
 		RTTInMillis:  0,
 		ResponseCode: 200,
-		Body: []byte(`{
+		Body: io.NopCloser(bytes.NewReader([]byte(`{
         "type": "collaboration",
         "id": "456"
-      }`),
+      }`))),
 	}
 	bResp4 := &Response{
 		Request:      br4,
@@ -363,7 +364,7 @@ func TestBatchRequest_ExecuteBatch(t *testing.T) {
 		Headers:      http.Header{},
 		RTTInMillis:  0,
 		ResponseCode: 404,
-		Body:         []byte(`null`),
+		Body:         io.NopCloser(bytes.NewReader([]byte(`null`))),
 	}
 	bResp5Header := http.Header{}
 	bResp5Header.Set("Retry-After", "4")
@@ -373,7 +374,7 @@ func TestBatchRequest_ExecuteBatch(t *testing.T) {
 		Headers:      bResp5Header,
 		RTTInMillis:  0,
 		ResponseCode: 429,
-		Body:         []byte(`null`),
+		Body:         io.NopCloser(bytes.NewReader([]byte(`null`))),
 	}
 	bRespHeader := http.Header{}
 	bRespHeader.Set(httpHeaderContentType, ContentTypeApplicationJson)
