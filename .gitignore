@@ -140,3 +140,5 @@ $RECYCLE.BIN/
 
 /cmd/sandbox/sandbox.go
 *.csv
+
+vendor/
