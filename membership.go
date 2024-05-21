@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 )
@@ -82,13 +83,18 @@ func (m *Membership) GetMembership(membershipId string) (*Membership, error) {
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	membership := Membership{apiInfo: m.apiInfo}
 
-	err = UnmarshalJSONWrapper(resp.Body, &membership)
+	err = UnmarshalJSONWrapper(body, &membership)
 	if err != nil {
 		return nil, err
 	}
@@ -128,13 +134,18 @@ func (m *Membership) CreateMembership() (*Membership, error) {
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusCreated {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	membership := &Membership{apiInfo: m.apiInfo}
 
-	err = UnmarshalJSONWrapper(resp.Body, membership)
+	err = UnmarshalJSONWrapper(body, membership)
 	if err != nil {
 		return nil, err
 	}
@@ -198,13 +209,18 @@ func (m *Membership) UpdateMembership(membershipId string) (*Membership, error) 
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	membership := Membership{apiInfo: m.apiInfo}
 
-	err = UnmarshalJSONWrapper(resp.Body, &membership)
+	err = UnmarshalJSONWrapper(body, &membership)
 	if err != nil {
 		return nil, err
 	}
@@ -234,8 +250,13 @@ func (m *Membership) DeleteMembership(membershipId string) error {
 		return err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
 	if resp.ResponseCode != http.StatusNoContent {
-		return newApiStatusError(resp.Body)
+		return newApiStatusError(body)
 	}
 	return nil
 }
@@ -266,8 +287,13 @@ func (m *Membership) GetMembershipForGroup(groupId string, offset int32, limit i
 		return nil, 0, 0, 0, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, 0, 0, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, 0, 0, 0, newApiStatusError(resp.Body)
+		return nil, 0, 0, 0, newApiStatusError(body)
 	}
 
 	memberships := struct {
@@ -277,7 +303,7 @@ func (m *Membership) GetMembershipForGroup(groupId string, offset int32, limit i
 		Limit      int           `json:"limit"`
 	}{}
 
-	err = UnmarshalJSONWrapper(resp.Body, &memberships)
+	err = UnmarshalJSONWrapper(body, &memberships)
 	if err != nil {
 		return nil, 0, 0, 0, err
 	}
@@ -313,8 +339,13 @@ func (m *Membership) GetMembershipForUser(userId string, offset int32, limit int
 		return nil, 0, 0, 0, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, 0, 0, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, 0, 0, 0, newApiStatusError(resp.Body)
+		return nil, 0, 0, 0, newApiStatusError(body)
 	}
 
 	memberships := struct {
@@ -324,7 +355,7 @@ func (m *Membership) GetMembershipForUser(userId string, offset int32, limit int
 		Limit      int           `json:"limit"`
 	}{}
 
-	err = UnmarshalJSONWrapper(resp.Body, &memberships)
+	err = UnmarshalJSONWrapper(body, &memberships)
 	if err != nil {
 		return nil, 0, 0, 0, err
 	}
@@ -360,8 +391,13 @@ func (m *Membership) GetCollaborationsForGroup(groupId string, offset int32, lim
 		return nil, 0, 0, 0, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, 0, 0, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, 0, 0, 0, newApiStatusError(resp.Body)
+		return nil, 0, 0, 0, newApiStatusError(body)
 	}
 
 	collabs := struct {
@@ -371,7 +407,7 @@ func (m *Membership) GetCollaborationsForGroup(groupId string, offset int32, lim
 		Limit      int              `json:"limit"`
 	}{}
 
-	err = UnmarshalJSONWrapper(resp.Body, &collabs)
+	err = UnmarshalJSONWrapper(body, &collabs)
 	if err != nil {
 		return nil, 0, 0, 0, err
 	}

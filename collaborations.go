@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 )
@@ -99,12 +100,17 @@ func (c *Collaboration) GetInfo(collaborationId string, fields []string) (*Colla
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	r := &Collaboration{apiInfo: &apiInfo{api: c.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, r)
+	err = UnmarshalJSONWrapper(body, r)
 	if err != nil {
 		return nil, err
 	}
@@ -197,12 +203,17 @@ func (c *Collaboration) Create(targetItem ItemMini, grantedTo UserGroupMini, rol
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusCreated {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	r := &Collaboration{apiInfo: &apiInfo{api: c.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, r)
+	err = UnmarshalJSONWrapper(body, r)
 	if err != nil {
 		return nil, err
 	}
@@ -247,10 +258,15 @@ func (c *Collaboration) Update(collaborationId string, role Role, status *Collab
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	switch resp.ResponseCode {
 	case http.StatusOK:
 		r := &Collaboration{apiInfo: &apiInfo{api: c.apiInfo.api}}
-		err = UnmarshalJSONWrapper(resp.Body, r)
+		err = UnmarshalJSONWrapper(body, r)
 		if err != nil {
 			return nil, err
 		}
@@ -261,7 +277,7 @@ func (c *Collaboration) Update(collaborationId string, role Role, status *Collab
 		// A 204 response is returned in this case.
 		return nil, nil
 	default:
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 }
 
@@ -286,11 +302,16 @@ func (c *Collaboration) Delete(collaborationId string) error {
 		return err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
 	switch resp.ResponseCode {
 	case http.StatusNoContent:
 		return nil
 	default:
-		err = newApiStatusError(resp.Body)
+		err = newApiStatusError(body)
 		return err
 	}
 }
@@ -321,8 +342,13 @@ func (c *Collaboration) PendingCollaborations(offset int, limit int, fields []st
 		return nil, offset, limit, 0, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, offset, limit, 0, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, offset, limit, 0, newApiStatusError(resp.Body)
+		return nil, offset, limit, 0, newApiStatusError(body)
 	}
 
 	r := struct {
@@ -331,7 +357,7 @@ func (c *Collaboration) PendingCollaborations(offset int, limit int, fields []st
 		Limit      int              `json:"limit"`
 		Entries    []*Collaboration `json:"entries"`
 	}{}
-	err = UnmarshalJSONWrapper(resp.Body, &r)
+	err = UnmarshalJSONWrapper(body, &r)
 	if err != nil {
 		return nil, offset, limit, 0, err
 	}

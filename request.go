@@ -166,25 +166,10 @@ func (req *Request) Send() (*Response, error) {
 		return nil, newApiOtherError(err, "")
 	}
 
-	var respBodyBytes []byte
-
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	// TODO should use io.ReadCloser. refine Response structure
-	respBodyBytes, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		err = xerrors.Errorf("failed to read response: %w", err)
-		return nil, newApiOtherError(err, "")
-	}
-
-	logResponse(resp, respBodyBytes, rttInMillis)
-
 	result = &Response{
 		ResponseCode: resp.StatusCode,
 		Headers:      resp.Header,
-		Body:         respBodyBytes,
+		Body:         resp.Body,
 		Request:      req,
 		ContentType:  resp.Header.Get(httpHeaderContentType),
 		RTTInMillis:  rttInMillis,
@@ -421,13 +406,6 @@ func (req *BatchRequest) ExecuteBatch(requests []*Request) (*BatchResponse, erro
 		err = xerrors.Errorf("failed to send request: %w", err)
 		return nil, newApiOtherError(err, "")
 	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	respBodyBytes, err := ioutil.ReadAll(resp.Body)
-
-	logResponse(resp, respBodyBytes, rttInMillis)
 
 	var result *BatchResponse
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -120,12 +121,17 @@ func (g *Group) GetGroup(groupId string, fields []string) (*Group, error) {
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	r := &Group{apiInfo: &apiInfo{api: g.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, r)
+	err = UnmarshalJSONWrapper(body, r)
 	if err != nil {
 		return nil, err
 	}
@@ -181,12 +187,17 @@ func (g *Group) CreateGroup(fields []string) (*Group, error) {
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusCreated {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	r := &Group{apiInfo: &apiInfo{api: g.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, r)
+	err = UnmarshalJSONWrapper(body, r)
 	if err != nil {
 		return nil, err
 	}
@@ -273,12 +284,17 @@ func (g *Group) UpdateGroup(groupId string, fields []string) (*Group, error) {
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	r := &Group{apiInfo: &apiInfo{api: g.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, r)
+	err = UnmarshalJSONWrapper(body, r)
 	if err != nil {
 		return nil, err
 	}
@@ -308,8 +324,13 @@ func (g *Group) DeleteGroup(groupId string) error {
 		return err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
 	if resp.ResponseCode != http.StatusNoContent {
-		return newApiStatusError(resp.Body)
+		return newApiStatusError(body)
 	}
 	return nil
 }
@@ -347,8 +368,13 @@ func (g *Group) GetEnterpriseGroups(name string, offset int32, limit int32, fiel
 		return nil, 0, 0, 0, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, 0, 0, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, 0, 0, 0, newApiStatusError(resp.Body)
+		return nil, 0, 0, 0, newApiStatusError(body)
 	}
 
 	groups := struct {
@@ -358,7 +384,7 @@ func (g *Group) GetEnterpriseGroups(name string, offset int32, limit int32, fiel
 		Limit      int      `json:"limit"`
 	}{}
 
-	err = UnmarshalJSONWrapper(resp.Body, &groups)
+	err = UnmarshalJSONWrapper(body, &groups)
 	if err != nil {
 		return nil, 0, 0, 0, err
 	}

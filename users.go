@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -209,12 +210,17 @@ func (u *User) GetCurrentUser(fields []string) (*User, error) {
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	r := &User{apiInfo: &apiInfo{api: u.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, r)
+	err = UnmarshalJSONWrapper(body, r)
 	if err != nil {
 		return nil, err
 	}
@@ -249,12 +255,17 @@ func (u *User) GetUser(userId string, fields []string) (*User, error) {
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	r := &User{apiInfo: &apiInfo{api: u.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, r)
+	err = UnmarshalJSONWrapper(body, r)
 	if err != nil {
 		return nil, err
 	}
@@ -337,12 +348,17 @@ func (u *User) CreateUser(fields []string) (*User, error) {
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusCreated {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	r := &User{apiInfo: &apiInfo{api: u.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, r)
+	err = UnmarshalJSONWrapper(body, r)
 	if err != nil {
 		return nil, err
 	}
@@ -525,12 +541,17 @@ func (u *User) UpdateUser(userId string, fields []string) (*User, error) {
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	r := &User{apiInfo: &apiInfo{api: u.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, r)
+	err = UnmarshalJSONWrapper(body, r)
 	if err != nil {
 		return nil, err
 	}
@@ -601,12 +622,17 @@ func (u *User) CreateAppUser(fields []string) (*User, error) {
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusCreated {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	r := &User{apiInfo: &apiInfo{api: u.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, r)
+	err = UnmarshalJSONWrapper(body, r)
 	if err != nil {
 		return nil, err
 	}
@@ -636,8 +662,13 @@ func (u *User) DeleteUser(userId string, notify bool, force bool) error {
 		return err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
 	if resp.ResponseCode != http.StatusNoContent {
-		return newApiStatusError(resp.Body)
+		return newApiStatusError(body)
 	}
 
 	return nil
@@ -670,8 +701,13 @@ func (u *User) GetEnterpriseUsers(filterTerm string, offset int, limit int, fiel
 		return nil, 0, 0, 0, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, 0, 0, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, 0, 0, 0, newApiStatusError(resp.Body)
+		return nil, 0, 0, 0, newApiStatusError(body)
 	}
 	users := struct {
 		TotalCount int     `json:"total_count"`
@@ -679,7 +715,7 @@ func (u *User) GetEnterpriseUsers(filterTerm string, offset int, limit int, fiel
 		Offset     int     `json:"offset"`
 		Limit      int     `json:"limit"`
 	}{}
-	err = UnmarshalJSONWrapper(resp.Body, &users)
+	err = UnmarshalJSONWrapper(body, &users)
 	if err != nil {
 		return nil, 0, 0, 0, err
 	}

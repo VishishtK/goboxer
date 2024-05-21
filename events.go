@@ -3,6 +3,7 @@ package goboxer
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -238,8 +239,13 @@ func (e *Event) UserEvent(streamType StreamType, streamPosition string, limit in
 		return nil, "", err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, "", err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, "", newApiStatusError(resp.Body)
+		return nil, "", newApiStatusError(body)
 	}
 	event := &struct {
 		ChunkSize          int         `json:"chunk_size"`
@@ -247,7 +253,7 @@ func (e *Event) UserEvent(streamType StreamType, streamPosition string, limit in
 		Entries            []*BoxEvent `json:"entries,omitempty"`
 	}{}
 
-	err = UnmarshalJSONWrapper(resp.Body, &event)
+	err = UnmarshalJSONWrapper(body, &event)
 	if err != nil {
 		return nil, "", err
 	}
@@ -295,8 +301,13 @@ func (e *Event) EnterpriseEvent(streamPosition string, eventTypes []EventType, c
 		return nil, "", err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, "", err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, "", newApiStatusError(resp.Body)
+		return nil, "", newApiStatusError(body)
 	}
 	event := &struct {
 		ChunkSize          int         `json:"chunk_size"`
@@ -304,7 +315,7 @@ func (e *Event) EnterpriseEvent(streamPosition string, eventTypes []EventType, c
 		Entries            []*BoxEvent `json:"entries,omitempty"`
 	}{}
 
-	err = UnmarshalJSONWrapper(resp.Body, &event)
+	err = UnmarshalJSONWrapper(body, &event)
 	if err != nil {
 		return nil, "", err
 	}

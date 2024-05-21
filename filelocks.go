@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 )
@@ -58,12 +59,17 @@ func (f *File) LockFile(fileId string, expiresAt *time.Time, isDownloadPrevented
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	file = &File{apiInfo: &apiInfo{api: f.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, file)
+	err = UnmarshalJSONWrapper(body, file)
 	if err != nil {
 		return nil, err
 	}
@@ -100,12 +106,17 @@ func (f *File) UnlockFile(fileId string, fields []string) (file *File, err error
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	file = &File{apiInfo: &apiInfo{api: f.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, file)
+	err = UnmarshalJSONWrapper(body, file)
 	if err != nil {
 		return nil, err
 	}

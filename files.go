@@ -202,12 +202,17 @@ func (f *File) GetFileInfo(fileId string, needExpiringEmbedLink bool, fields []s
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	r := &File{apiInfo: &apiInfo{api: f.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, r)
+	err = UnmarshalJSONWrapper(body, r)
 	if err != nil {
 		return nil, err
 	}
@@ -239,6 +244,11 @@ func (f *File) DownloadFile(fileId string, fileVersion string, boxApiHeader stri
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	switch resp.ResponseCode {
 	case http.StatusOK:
 		fallthrough
@@ -246,7 +256,7 @@ func (f *File) DownloadFile(fileId string, fileVersion string, boxApiHeader stri
 		return resp, nil
 
 	default:
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 }
 
@@ -315,8 +325,13 @@ func (f *File) UploadFile(filename string, reader io.Reader, parentFolderId stri
 		return nil, err
 	}
 
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusCreated {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(respBody)
 	}
 
 	files := struct {
@@ -326,7 +341,7 @@ func (f *File) UploadFile(filename string, reader io.Reader, parentFolderId stri
 		Limit      int     `json:"limit"`
 	}{}
 
-	err = UnmarshalJSONWrapper(resp.Body, &files)
+	err = UnmarshalJSONWrapper(respBody, &files)
 	if err != nil {
 		return nil, err
 	}
@@ -403,8 +418,13 @@ func (f *File) UploadFileVersion(fileId string, reader io.Reader, filename *stri
 		return nil, err
 	}
 
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusCreated {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(respBody)
 	}
 
 	files := struct {
@@ -414,7 +434,7 @@ func (f *File) UploadFileVersion(fileId string, reader io.Reader, filename *stri
 		Limit      int     `json:"limit"`
 	}{}
 
-	err = UnmarshalJSONWrapper(resp.Body, &files)
+	err = UnmarshalJSONWrapper(respBody, &files)
 	if err != nil {
 		return nil, err
 	}
@@ -484,11 +504,16 @@ func (f *File) Update(fileId string, ifMatch string, fields []string) (*File, er
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 	file := &File{apiInfo: f.apiInfo}
-	err = UnmarshalJSONWrapper(resp.Body, &file)
+	err = UnmarshalJSONWrapper(body, &file)
 	if err != nil {
 		return nil, err
 	}
@@ -515,8 +540,13 @@ func (f *File) PreflightCheck(name string, parentFolderId string, size *int) (ok
 		return false, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return false, newApiStatusError(resp.Body)
+		return false, newApiStatusError(body)
 	}
 	return true, nil
 }
@@ -551,8 +581,13 @@ func (f *File) Delete(fileId string, ifMatch string) error {
 		return err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
 	if resp.ResponseCode != http.StatusNoContent {
-		return newApiStatusError(resp.Body)
+		return newApiStatusError(body)
 	}
 
 	return nil
@@ -595,12 +630,17 @@ func (f *File) Copy(fileId string, parentFolderId string, name string, version s
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	if resp.ResponseCode != http.StatusCreated {
-		return nil, newApiStatusError(resp.Body)
+		return nil, newApiStatusError(body)
 	}
 
 	file = &File{apiInfo: &apiInfo{api: f.apiInfo.api}}
-	err = UnmarshalJSONWrapper(resp.Body, file)
+	err = UnmarshalJSONWrapper(body, file)
 	if err != nil {
 		return nil, err
 	}
@@ -641,14 +681,19 @@ func (f *File) Collaborations(fileId string, marker string, limit int, fields []
 		return nil, "", err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, "", err
+	}
+
 	if resp.ResponseCode != http.StatusOK {
-		return nil, "", newApiStatusError(resp.Body)
+		return nil, "", newApiStatusError(body)
 	}
 	items := struct {
 		NextMarker string           `json:"next_marker,omitempty"`
 		Entries    []*Collaboration `json:"entries"`
 	}{}
-	err = UnmarshalJSONWrapper(resp.Body, &items)
+	err = UnmarshalJSONWrapper(body, &items)
 	if err != nil {
 		return nil, "", err
 	}

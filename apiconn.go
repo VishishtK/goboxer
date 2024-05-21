@@ -264,7 +264,11 @@ func (ac *APIConn) Refresh() error {
 	}
 
 	var tokenResp tokenResponse
-	if err := json.Unmarshal(resp.Body, &tokenResp); err != nil {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(body, &tokenResp); err != nil {
 		err = xerrors.Errorf("failed to parse response. error = %w", err)
 		ac.notifyFail(err)
 		return err
@@ -311,7 +315,11 @@ func (ac *APIConn) Authenticate(authCode string) error {
 	}
 
 	var tokenResp tokenResponse
-	if err := json.Unmarshal(resp.Body, &tokenResp); err != nil {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(body, &tokenResp); err != nil {
 		err = xerrors.Errorf("failed to parse response. error = %w", err)
 		ac.notifyFail(err)
 		return err
