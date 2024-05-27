@@ -244,11 +244,6 @@ func (f *File) DownloadFile(fileId string, fileVersion string, boxApiHeader stri
 		return nil, err
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	switch resp.ResponseCode {
 	case http.StatusOK:
 		fallthrough
@@ -256,6 +251,10 @@ func (f *File) DownloadFile(fileId string, fileVersion string, boxApiHeader stri
 		return resp, nil
 
 	default:
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
 		return nil, newApiStatusError(body)
 	}
 }
